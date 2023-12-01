@@ -60,3 +60,35 @@ class MyDataset(Dataset):
         y = torch.tensor(y, dtype=torch.float32)
         y = F.pad(y, (0, 14-num_assets))
         return x, y, num_assets
+
+class MaskedMSELoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, y_pred, y_true, mask):
+        return (mask*(y_pred-y_true)**2).mean()
+
+class PairWiseRankingLoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, y_pred, y_true, mask):
+        batch_size, n = y_pred.shape
+        y_pred_diff = y_pred.reshape(batch_size, n, 1) - y_pred.reshape(batch_size, 1, n)
+        y_true_diff = y_true.reshape(batch_size, n, 1) - y_true.reshape(batch_size, 1, n)
+        mask = mask.reshape(batch_size, 1, n)*mask.reshape(batch_size, n, 1)
+        total_loss = F.relu(-y_pred_diff*y_true_diff*mask)
+        return total_loss.mean()
+
+class MSEPlusRank(nn.Module):
+    def __init__(self, lamda=1):
+        super().__init__()
+        self.lamda = lamda
+        self.mse = MaskedMSELoss()
+        self.rankloss = PairWiseRankingLoss()
+
+    def forward(self, y_pred, y_true, mask):
+        loss1 = self.mse(y_pred, y_true, mask)
+        loss2 = self.rankloss(y_pred, y_true, mask)
+        loss = loss1 + self.lamda*loss2
+        return loss

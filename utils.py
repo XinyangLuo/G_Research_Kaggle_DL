@@ -145,10 +145,8 @@ def train_loop(dataloader, net, loss_fn, optimizer, device):
 
             mask = torch.arange(14).expand(batch_size, 14).to(device)
             mask = mask < num_assets.unsqueeze(1)
-            y_pred = y_pred * mask.float()
-            y = y * mask.float()
             
-            loss = loss_fn(y_pred, y)
+            loss = loss_fn(y_pred, y, mask)
 
             optimizer.zero_grad()
             loss.backward()
@@ -177,10 +175,8 @@ def val_loop(dataloader, net, loss_fn, device):
 
                 mask = torch.arange(14).expand(batch_size, 14).to(device)
                 mask = mask < num_assets.unsqueeze(1)
-                y_pred = y_pred * mask.float()
-                y = y * mask.float()
 
-                loss = loss_fn(y_pred, y)
+                loss = loss_fn(y_pred, y, mask)
                 running_loss = (batch_size * loss.item() + running_loss * current) / (batch_size + current)
                 t.set_postfix({'val loss':running_loss})
                 
