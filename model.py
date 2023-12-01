@@ -23,9 +23,9 @@ class CryptoTransformer(nn.Module):
         self.output = nn.Linear(model_dim, 1)
         self.apply(init_weights)
         
-    def forward(self, x):
+    def forward(self, x, mask):
         emb_x = self.input_up(x)
-        enc_x = self.encoder(emb_x)
+        enc_x = self.encoder(emb_x, src_key_padding_mask=~mask)
         output = self.output(enc_x)
         return output
     

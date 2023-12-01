@@ -5,7 +5,8 @@ Since we do not have access to the original test set, we split the
 first 40% of supplemental_train.csv as validation set and last 40% of as test set. We use techniques of purging 
 and embargo to prevent leakage of feature information.
 ## Install the dependency
-Run the following scripts to install the dependency, if you want to use pytorch with cuda, you should install the correct version by yourself
+Run the following scripts to install the dependency, if you want to use pytorch with cuda, you should install the
+suitable version by yourself
 ```
 pip install -r requirements.txt
 ```

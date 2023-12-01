@@ -140,14 +140,12 @@ def train_loop(dataloader, net, loss_fn, optimizer, device):
             X = X.to(device)
             y = y.to(device)
             num_assets = num_assets.to(device)
-            y_pred = net(X)
-            y_pred = y_pred.view(batch_size, 14)
-
             mask = torch.arange(14).expand(batch_size, 14).to(device)
             mask = mask < num_assets.unsqueeze(1)
-            
-            loss = loss_fn(y_pred, y, mask)
 
+            y_pred = net(X, mask)
+            y_pred = y_pred.view(batch_size, 14)
+            loss = loss_fn(y_pred, y, mask)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -170,12 +168,11 @@ def val_loop(dataloader, net, loss_fn, device):
                 X = X.to(device)
                 y = y.to(device)
                 num_assets = num_assets.to(device)
-                y_pred = net(X)
-                y_pred = y_pred.view(batch_size, 14)
-
                 mask = torch.arange(14).expand(batch_size, 14).to(device)
                 mask = mask < num_assets.unsqueeze(1)
 
+                y_pred = net(X, mask)
+                y_pred = y_pred.view(batch_size, 14)
                 loss = loss_fn(y_pred, y, mask)
                 running_loss = (batch_size * loss.item() + running_loss * current) / (batch_size + current)
                 t.set_postfix({'val loss':running_loss})
