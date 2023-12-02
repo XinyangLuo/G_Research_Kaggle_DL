@@ -157,7 +157,9 @@ def train_loop(dataloader, net, loss_fn, optimizer, device):
             running_rank_loss = (batch_size * rank_loss.item() + running_rank_loss * current) / (batch_size + current)
 
             current += batch_size
-            t.set_postfix({'train loss':running_loss})
+            t.set_postfix({'train loss': running_loss, 
+                           'mse loss': running_mse_loss,
+                           'rank loss': running_rank_loss})
     
     return running_loss, running_mse_loss, running_rank_loss
 
@@ -187,7 +189,9 @@ def val_loop(dataloader, net, loss_fn, device):
                 running_rank_loss = (batch_size * rank_loss.item() + running_rank_loss * current) / (batch_size + current)
 
                 current += batch_size
-                t.set_postfix({'val loss':running_loss})
+                t.set_postfix({'val loss': running_loss,
+                               'mse loss': running_mse_loss,
+                               'rank loss': running_rank_loss})
                 
     return running_loss, running_mse_loss, running_rank_loss
 
