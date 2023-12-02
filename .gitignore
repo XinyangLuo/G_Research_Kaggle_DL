@@ -4,3 +4,6 @@ g-research-crypto-forecasting/*
 processed_data/*
 __pycache__/*
 **/.DS_Store
+.vscode/*
+
+*.xlsx

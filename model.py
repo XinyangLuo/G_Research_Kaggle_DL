@@ -90,6 +90,6 @@ class MSEPlusRank(nn.Module):
     def forward(self, y_pred, y_true, mask):
         loss1 = self.mse(y_pred, y_true, mask)
         loss2 = self.rankloss(y_pred, y_true, mask)
-        coef = (loss1/loss2).detach()
-        loss = loss1 + self.lamda*coef*loss2
+        coef = (loss2/loss1).detach()
+        loss = coef*loss1 + self.lamda*loss2
         return loss, loss1, loss2
