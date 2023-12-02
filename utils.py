@@ -130,7 +130,9 @@ def process_time_series_feature(data, verbose=False):
     return processed_assets
 
 def train_loop(dataloader, net, loss_fn, optimizer, device):
-    running_loss = 0
+    running_loss = 0.0
+    running_mse_loss = 0.0
+    running_rank_loss = 0.0
     current = 0
     net.train()
 
@@ -145,19 +147,24 @@ def train_loop(dataloader, net, loss_fn, optimizer, device):
 
             y_pred = net(X, mask)
             y_pred = y_pred.view(batch_size, 14)
-            loss = loss_fn(y_pred, y, mask)
+            loss, mse_loss, rank_loss = loss_fn(y_pred, y, mask)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
             running_loss = (batch_size * loss.item() + running_loss * current) / (batch_size + current)
+            running_mse_loss = (batch_size * mse_loss.item() + running_mse_loss * current) / (batch_size + current)
+            running_rank_loss = (batch_size * rank_loss.item() + running_rank_loss * current) / (batch_size + current)
+
             current += batch_size
             t.set_postfix({'train loss':running_loss})
     
-    return running_loss
+    return running_loss, running_mse_loss, running_rank_loss
 
 def val_loop(dataloader, net, loss_fn, device):
     running_loss = 0.0
+    running_mse_loss = 0.0
+    running_rank_loss = 0.0
     current = 0
     net.eval()
     
@@ -173,11 +180,16 @@ def val_loop(dataloader, net, loss_fn, device):
 
                 y_pred = net(X, mask)
                 y_pred = y_pred.view(batch_size, 14)
-                loss = loss_fn(y_pred, y, mask)
+                loss, mse_loss, rank_loss = loss_fn(y_pred, y, mask)
+
                 running_loss = (batch_size * loss.item() + running_loss * current) / (batch_size + current)
+                running_mse_loss = (batch_size * mse_loss.item() + running_mse_loss * current) / (batch_size + current)
+                running_rank_loss = (batch_size * rank_loss.item() + running_rank_loss * current) / (batch_size + current)
+
+                current += batch_size
                 t.set_postfix({'val loss':running_loss})
                 
-    return running_loss
+    return running_loss, running_mse_loss, running_rank_loss
 
 def weighted_mean(x, w):
     return np.sum(x*w)/np.sum(w)

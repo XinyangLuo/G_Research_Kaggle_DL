@@ -56,6 +56,10 @@ total_num = sum(p.numel() for p in net.parameters())
 trainable_num = sum(p.numel() for p in net.parameters() if p.requires_grad)
 print(f"Total number of parameters: {total_num/1e3:.0f}K, number of trainable parameters: {trainable_num/1e3:.0f}K")
 
+if not os.path.exists('./checkpoint'):
+    os.mkdir('./checkpoint')
+if not os.path.exists('./logs'):
+    os.mkdir('./logs')
 if not os.path.exists(f'./checkpoint/{experiment_name}'):
     os.mkdir(f'./checkpoint/{experiment_name}')
 if not os.path.exists(f'./logs/{experiment_name}'):
@@ -72,11 +76,16 @@ for t in range(max_epoch):
         processed_train = pd.read_csv('./processed_data/processed_train.gz', skiprows=range(1,split_length*2), nrows=split_length)        
         train_dataset = MyDataset(processed_train)
         train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        train_loss = train_loop(train_dataloader, net, loss_fn, optimizer, device)
+        train_loss, train_mse_loss, train_rank_loss = train_loop(train_dataloader, net, loss_fn, optimizer, device)
 
-        val_loss = val_loop(val_dataloader, net, loss_fn, device)
+        val_loss, val_mse_loss, val_rank_loss = val_loop(val_dataloader, net, loss_fn, device)
         tb.add_scalar("Train Loss", train_loss, t*num_splits+i+1)
+        tb.add_scalar("Train MSE Loss", train_mse_loss, t*num_splits+i+1)
+        tb.add_scalar("Train Rank Loss", train_rank_loss, t*num_splits+i+1)
+
         tb.add_scalar("Val Loss", val_loss, t*num_splits+i+1)
+        tb.add_scalar("Val MSE Loss", val_mse_loss, t*num_splits+i+1)
+        tb.add_scalar("Val Rank Loss", val_rank_loss, t*num_splits+i+1)
     
         torch.save(net, f"./checkpoint/{experiment_name}/epoch_{t+1}_step_{i+1}.pt")
         if val_loss < min_val_loss:
