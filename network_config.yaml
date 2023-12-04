@@ -1,8 +1,8 @@
 num_feature: 68
-
 batch_size: 64
-model_dim: 128
-ffn_dim: 128
+
+model_dim: 32
+ffn_dim: 64
 drop_out: 0.3
 num_heads: 4
 num_layers: 2
